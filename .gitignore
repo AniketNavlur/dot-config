@@ -8,3 +8,6 @@
 
 !user-cfg/
 !user-cfg/**/*
+
+!alacritty/
+!alacritty/**/*

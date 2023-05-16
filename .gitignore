@@ -11,3 +11,6 @@
 
 !alacritty/
 !alacritty/**/*
+
+!zellij/
+!zellij/**/*

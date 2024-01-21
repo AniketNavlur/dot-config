@@ -30,15 +30,15 @@ function M.setup()
     })
 end
 
-M.capabilities = vim.lsp.protocol.make_client_capabilities()
-M.capabilities.textDocument.completion.completionItem.snippetSupport = true
-
 local ok, cmp_nvim_lsp = pcall(require, 'cmp_nvim_lsp')
 if ok then
     M.capabilities = cmp_nvim_lsp.default_capabilities(M.capabilities)
 else
+    M.capabilities = vim.lsp.protocol.make_client_capabilities()
     vim.notify("cmp_nvim_lsp not loaded")
 end
+
+M.capabilities.textDocument.completion.completionItem.snippetSupport = true
 
 M.on_attach = function(client, bufnr)
     local opts = keymaps.default_opts()
@@ -46,6 +46,10 @@ M.on_attach = function(client, bufnr)
     keymaps.register_keymaps(keymaps.get_keymaps("lsp-keymaps"), opts)
 
     local attachs = require("user.lsp").get_registered_attachs()
+
+    if client.supports_method "textDocument/inlayHint" then
+        vim.lsp.inlay_hint.enable()
+    end
 
     for _, on_attach_cb in ipairs(attachs) do
         on_attach_cb(client, bufnr)

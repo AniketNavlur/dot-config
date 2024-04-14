@@ -113,12 +113,11 @@ function M.setup(core_lib)
             end
         }
     )
-
 end
 
-function M.register_cmd(api_name, func)
-    if func ~= nil then
-        M.commands[api_name] = func
+function M.register_cmd(api_name, cmd, ...)
+    if cmd ~= nil then
+        M.commands[api_name] = { func = cmd, args = { ... } }
     end
 end
 
@@ -129,16 +128,21 @@ end
 
 function M.dispatch(api_name)
     local cmd = M.commands[api_name]
-    if cmd == nil then
-        vim.notify("Not Implemented: " .. api_name, vim.log.levels.WARN)
-    elseif type(cmd) == 'function' then
-        -- vim.notify(api_name .. ": " .. tostring(cmd), vim.log.levels.INFO)
-        cmd()
-    elseif type(cmd) == 'string' then
-        -- vim.notify(api_name .. ": " .. cmd, vim.log.levels.INFO)
-        vim.cmd(cmd)
+
+    if type(cmd) ~= 'table' then
+        vim.notify("Not Implemented: " .. api_name .. " cmd: " .. tostring(cmd), vim.log.levels.WARN)
+    elseif type(cmd.func) == 'function' then
+        -- vim.notify(api_name .. ": " .. "`{ func=" .. tostring(cmd.func) .. ", args=" .. tostring(cmd.args) .. " }`", vim.log.levels.INFO)
+        cmd.func(table.unpack(cmd.args))
+    elseif type(cmd.func) == 'string' then
+        -- vim.notify(api_name .. ": " .. "`{ func=" .. tostring(cmd.func) .. ", args=" .. tostring(cmd.args) .. " }`", vim.log.levels.INFO)
+        vim.cmd(cmd.func, table.unpack(cmd.args))
     else
-        vim.notify("Not supported: cmd type `" .. type(cmd) "` for" .. api_name, vim.log.levels.WARN)
+        vim.notify(
+            "Not supported: cmd type " ..
+            "`{ func=" .. type(cmd.func) .. ", args=" .. type(cmd.args) .. " }` for" .. api_name,
+            vim.log.levels.WARN
+        )
     end
 end
 
